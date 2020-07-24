@@ -26,58 +26,58 @@ export function sortArray(data: Array<TableData>, col: String, dir: Boolean): Ar
         }
         case USERNAME: {
             const sorted = data.sort((a, b) => {
-                if(a.username && b.username){
-                return a.username.toLowerCase() > b.username.toLowerCase() ? 
-                1 : 
-                b.username.toLowerCase() > a.username.toLowerCase() ? 
-                -1 : 0 
-                }else{
+                if (a.username && b.username) {
+                    return a.username.toLowerCase() > b.username.toLowerCase() ?
+                        1 :
+                        b.username.toLowerCase() > a.username.toLowerCase() ?
+                            -1 : 0
+                } else {
                     return 0;
                 }
-            });        
-            
-            return dir ? sorted : sorted.reverse(); 
+            });
+
+            return dir ? sorted : sorted.reverse();
         }
         case TITLE: {
             const sorted = data.sort((a, b) => {
-                if(a.title && b.title){
-                return a.title.toLowerCase() > b.title.toLowerCase() ? 
-                1 : 
-                b.title.toLowerCase() > a.title.toLowerCase() ? 
-                -1 : 0 
-                }else{
+                if (a.title && b.title) {
+                    return a.title.toLowerCase() > b.title.toLowerCase() ?
+                        1 :
+                        b.title.toLowerCase() > a.title.toLowerCase() ?
+                            -1 : 0
+                } else {
                     return 0;
                 }
-            });        
-            
-            return dir ? sorted : sorted.reverse(); 
+            });
+
+            return dir ? sorted : sorted.reverse();
         }
         case BODY: {
             const sorted = data.sort((a, b) => {
-                if(a.body && b.body){
-                return a.body.toLowerCase() > b.body.toLowerCase() ? 
-                1 : 
-                b.body.toLowerCase() > a.body.toLowerCase() ? 
-                -1 : 0 
-                }else{
+                if (a.body && b.body) {
+                    return a.body.toLowerCase() > b.body.toLowerCase() ?
+                        1 :
+                        b.body.toLowerCase() > a.body.toLowerCase() ?
+                            -1 : 0
+                } else {
                     return 0;
                 }
-            });        
-            
-            return dir ? sorted : sorted.reverse(); 
+            });
+
+            return dir ? sorted : sorted.reverse();
         }
         default:
             return data;
     }
 }
 
-export function searchArray(data: Array<TableData>, input: string): Array<TableData>{
+export function searchArray(data: Array<TableData>, input: string): Array<TableData> {
     const resultData: Array<TableData> = [];
-    
+
     const pattern = new RegExp(input, 'g');
     data.forEach((row, i) => {
-        for(let [key, value] of Object.entries(row)){
-            if(String(value).search(pattern) !== -1){
+        for (let [key, value] of Object.entries(row)) {
+            if (String(value).search(pattern) !== -1) {
                 resultData.push(row);
                 break;
             }
@@ -85,4 +85,8 @@ export function searchArray(data: Array<TableData>, input: string): Array<TableD
     });
 
     return resultData;
+}
+
+export function deletePost(data: Array<TableData>, postId: number): Array<TableData> {
+    return data.filter(row => row.id !== postId);
 }

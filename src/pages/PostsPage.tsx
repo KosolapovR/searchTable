@@ -1,11 +1,12 @@
 import React, {useState, useRef} from "react";
 import styled from "styled-components";
-import {sortArray, searchArray} from "../utils/utils";
+import {sortArray, searchArray, deletePost} from "../utils/utils";
 import {useTableData} from "../hooks";
 import {BODY, ID, TITLE, USERNAME} from "../config/types";
 import {TableData} from "../interfaces/TableData";
 import {SortIcons} from "../interfaces/SortIcons";
 import SortIcon from "../components/SortIcon";
+import {API} from "../config";
 
 const Table = styled.table`
   td,
@@ -90,19 +91,45 @@ const TableHead = styled.thead`
   table-layout: fixed;
 `;
 
+const DelCell = styled.td`
+    i{
+    cursor: pointer;
+      &:hover{
+        color: #b5393c;
+      }
+    }
+`;
+
 export default function PostsPage() {
-    const [sortedData, setSortedData] = useState<Array<TableData>>([]);
     const initialSortIconState = {
         id: null,
         username: null,
         title: null,
         body: null
     };
+    const [sortedData, setSortedData] = useState<Array<TableData>>([]);
     const [sortIcon, setSortIcon] = useState<SortIcons>(initialSortIconState);
 
     const initialData = useTableData();
 
     const inputRef = useRef(null);
+
+    const handleDeletePost = async (id: number) => {
+
+        const response = await fetch(
+            `${API}/posts/${id}`,
+            {method: 'DELETE'}
+        );
+        if (response.status === 200){
+            let newData;
+            if(sortedData.length){
+                newData = deletePost(sortedData, id);
+            }else{
+                newData = deletePost(initialData, id);
+            }
+            setSortedData(newData);
+        }
+    };
 
     const handleSort = (e: any) => {
         const column = e.target.parentElement.dataset.sort || e.target.dataset.sort;
@@ -130,7 +157,6 @@ export default function PostsPage() {
                 break;
             }
         }
-        debugger;
         if (sortedData.length && typeof dir !== 'object') {
             setSortedData([...sortArray(sortedData, column, dir)]);
         } else {
@@ -139,10 +165,10 @@ export default function PostsPage() {
     };
 
     const handleSearchChange = () => {
-      let currentInput : any = inputRef.current;
+        let currentInput: any = inputRef.current;
         if (currentInput)
             if (currentInput.value === "") {
-                setSortedData(initialData);
+                setSortedData([...sortArray(initialData, ID, true)]);
             } else {
                 setSortedData([...searchArray(tableRows, currentInput.value)]);
             }
@@ -182,7 +208,7 @@ export default function PostsPage() {
                                 <td>{row.title}</td>
                                 <td>{row.body}</td>
                                 <td>Edit</td>
-                                <td>Del</td>
+                                <DelCell><i className="fas fa-trash" onClick={() => {handleDeletePost(row.id)}}></i></DelCell>
                             </tr>
                         ))}
                     </TableBody>
