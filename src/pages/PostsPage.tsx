@@ -1,10 +1,10 @@
-import React, { useState, useRef } from "react";
+import React, {useState, useRef} from "react";
 import styled from "styled-components";
-import { sortArray, searchArray } from "../utils/utils";
-import { useTableData } from "../hooks";
-import { BODY, ID, TITLE, USERNAME } from "../config/types";
-import { TableData } from "../interfaces/TableData";
-import { SortIcons } from "../interfaces/SortIcons";
+import {sortArray, searchArray} from "../utils/utils";
+import {useTableData} from "../hooks";
+import {BODY, ID, TITLE, USERNAME} from "../config/types";
+import {TableData} from "../interfaces/TableData";
+import {SortIcons} from "../interfaces/SortIcons";
 import SortIcon from "../components/SortIcon";
 
 const Table = styled.table`
@@ -91,104 +91,105 @@ const TableHead = styled.thead`
 `;
 
 export default function PostsPage() {
-  const [sortedData, setSortedData] = useState<Array<TableData>>([]);
-  const initialSortIconState = {
-    id: null,
-    username: null,
-    title: null,
-    body: null
-  };
-  const [sortIcon, setSortIcon] = useState<SortIcons>(initialSortIconState);
+    const [sortedData, setSortedData] = useState<Array<TableData>>([]);
+    const initialSortIconState = {
+        id: null,
+        username: null,
+        title: null,
+        body: null
+    };
+    const [sortIcon, setSortIcon] = useState<SortIcons>(initialSortIconState);
 
-  const initialData = useTableData();
+    const initialData = useTableData();
 
-  const inputRef = useRef();
+    const inputRef = useRef(null);
 
-  const handleSort = (e: any) => {
-    const column = e.target.parentElement.dataset.sort || e.target.dataset.sort;
+    const handleSort = (e: any) => {
+        const column = e.target.parentElement.dataset.sort || e.target.dataset.sort;
 
-    let dir = true;
-    switch (column) {
-      case ID: {
-        setSortIcon({ ...initialSortIconState, id: !sortIcon.id });
-        dir = !sortIcon.id!;
-        break;
-      }
-      case USERNAME: {
-        setSortIcon({ ...initialSortIconState, username: !sortIcon.username });
-        dir = !sortIcon.username!;
-        break;
-      }
-      case TITLE: {
-        setSortIcon({ ...initialSortIconState, title: !sortIcon.title });
-        dir = !sortIcon.title!;
-        break;
-      }
-      case BODY: {
-        setSortIcon({ ...initialSortIconState, body: !sortIcon.body });
-        dir = !sortIcon.body!;
-        break;
-      }
-    }
+        let dir = true;
+        switch (column) {
+            case ID: {
+                setSortIcon({...initialSortIconState, id: !sortIcon.id});
+                dir = !sortIcon.id!;
+                break;
+            }
+            case USERNAME: {
+                setSortIcon({...initialSortIconState, username: !sortIcon.username});
+                dir = !sortIcon.username!;
+                break;
+            }
+            case TITLE: {
+                setSortIcon({...initialSortIconState, title: !sortIcon.title});
+                dir = !sortIcon.title!;
+                break;
+            }
+            case BODY: {
+                setSortIcon({...initialSortIconState, body: !sortIcon.body});
+                dir = !sortIcon.body!;
+                break;
+            }
+        }
+        debugger;
+        if (sortedData.length && typeof dir !== 'object') {
+            setSortedData([...sortArray(sortedData, column, dir)]);
+        } else {
+            setSortedData(sortArray(initialData, column, dir));
+        }
+    };
 
-    if (sortedData.length && dir) {
-      setSortedData([...sortArray(sortedData, column, dir)]);
-    } else {
-      setSortedData(sortArray(initialData, column, dir));
-    }
-  };
+    const handleSearchChange = () => {
+      let currentInput : any = inputRef.current;
+        if (currentInput)
+            if (currentInput.value === "") {
+                setSortedData(initialData);
+            } else {
+                setSortedData([...searchArray(tableRows, currentInput.value)]);
+            }
+    };
 
-  const handleSearchChange = (e: any) => {
-    if (inputRef.current.value === "") {
-      setSortedData(initialData);
-    } else {
-      console.log(searchArray(tableRows, inputRef.current.value));
-      setSortedData([...searchArray(tableRows, inputRef.current.value)]);
-    }
-  };
+    const tableRows = sortedData.length > 0 ? sortedData : initialData;
 
-  const tableRows = sortedData.length > 0 ? sortedData : initialData;
-
-  return (
-    <>
-      {tableRows ? (
-        <Table>
-          <TableHead>
-            <tr>
-              <th onClick={handleSort} data-sort={ID}>
-                ID <SortIcon data-sort={ID} status={sortIcon.id} />
-              </th>
-              <th onClick={handleSort} data-sort={USERNAME}>
-                Author <SortIcon status={sortIcon.username} />
-              </th>
-              <th onClick={handleSort} data-sort={TITLE}>
-                Title <SortIcon status={sortIcon.title} />
-              </th>
-              <th onClick={handleSort} data-sort={BODY}>
-                Text <SortIcon status={sortIcon.body} />
-              </th>
-              <th>
-                <input ref={inputRef} onChange={handleSearchChange} />
-              </th>
-              <th />
-            </tr>
-          </TableHead>
-          <TableBody>
-            {tableRows.map(row => (
-              <tr key={row.id}>
-                <td>{row.id}</td>
-                <td>{row.username}</td>
-                <td>{row.title}</td>
-                <td>{row.body}</td>
-                <td>Edit</td>
-                <td>Del</td>
-              </tr>
-            ))}
-          </TableBody>
-        </Table>
-      ) : (
-        <div>preloader</div>
-      )}
-    </>
-  );
+    return (
+        <>
+            {tableRows ? (
+                <Table>
+                    <TableHead>
+                        <tr>
+                            <th onClick={handleSort} data-sort={ID}>
+                                ID <SortIcon data-sort={ID} status={sortIcon.id}/>
+                            </th>
+                            <th onClick={handleSort} data-sort={USERNAME}>
+                                Author <SortIcon status={sortIcon.username}/>
+                            </th>
+                            <th onClick={handleSort} data-sort={TITLE}>
+                                Title <SortIcon status={sortIcon.title}/>
+                            </th>
+                            <th onClick={handleSort} data-sort={BODY}>
+                                Text <SortIcon status={sortIcon.body}/>
+                            </th>
+                            <th>
+                                <input ref={inputRef} onChange={handleSearchChange}/>
+                            </th>
+                            <th/>
+                        </tr>
+                    </TableHead>
+                    <TableBody>
+                        {tableRows.map(row => (
+                            <tr key={row.id}>
+                                <td>{row.id}</td>
+                                <td>{row.username}</td>
+                                <td>{row.title}</td>
+                                <td>{row.body}</td>
+                                <td>Edit</td>
+                                <td>Del</td>
+                            </tr>
+                        ))}
+                    </TableBody>
+                </Table>
+            ) : (
+                <div>preloader</div>
+            )}
+        </>
+    );
 }
