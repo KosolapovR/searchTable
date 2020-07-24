@@ -1,4 +1,4 @@
-import React, {useState, useRef} from "react";
+import React, {useState, useRef, useEffect} from "react";
 import styled from "styled-components";
 import {sortArray, searchArray, deletePost} from "../utils/utils";
 import {useTableData} from "../hooks";
@@ -7,18 +7,24 @@ import {TableData} from "../interfaces/TableData";
 import {SortIcons} from "../interfaces/SortIcons";
 import SortIcon from "../components/SortIcon";
 import {API} from "../config";
+import DropDown from "../components/DropDown";
 
 const Table = styled.table`
+  .fas{
+    cursor: pointer;
+    margin: 0 5px;
+  }
   td,
   th {
     padding: 7px;
     &:nth-child(1) {
       text-align: center;
-      width: 40px;
+      width: 50px;
     }
     &:nth-child(2) {
+      position:relative;
       text-align: center;
-      width: 8rem;
+      width: 10rem;
     }
     &:nth-child(5) {
       width: 2.5em;
@@ -92,8 +98,7 @@ const TableHead = styled.thead`
 `;
 
 const DelCell = styled.td`
-    i{
-    cursor: pointer;
+    .fas{
       &:hover{
         color: #b5393c;
       }
@@ -109,10 +114,32 @@ export default function PostsPage() {
     };
     const [sortedData, setSortedData] = useState<Array<TableData>>([]);
     const [sortIcon, setSortIcon] = useState<SortIcons>(initialSortIconState);
+    const [dropDownVisible, setDropDownVisible] = useState<Boolean>(false);
 
     const initialData = useTableData();
 
     const inputRef = useRef(null);
+    const dropDownIconRef = useRef(null);
+    const dropDownRef = useRef(null);
+
+    useEffect(() => {
+        //скрытие dropDown по клику вне его;
+        console.log(1);
+        function handleClickOutside(e: Event) {
+            const currentDropDown: any = dropDownRef.current;
+            if (
+                currentDropDown &&
+                !currentDropDown.contains(e.target)
+            ) {
+                setDropDownVisible(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [dropDownRef]);
 
     const handleDeletePost = async (id: number) => {
 
@@ -120,11 +147,11 @@ export default function PostsPage() {
             `${API}/posts/${id}`,
             {method: 'DELETE'}
         );
-        if (response.status === 200){
+        if (response.status === 200) {
             let newData;
-            if(sortedData.length){
+            if (sortedData.length) {
                 newData = deletePost(sortedData, id);
-            }else{
+            } else {
                 newData = deletePost(initialData, id);
             }
             setSortedData(newData);
@@ -132,6 +159,12 @@ export default function PostsPage() {
     };
 
     const handleSort = (e: any) => {
+        let currentDropDown: any = dropDownIconRef.current;
+        if (currentDropDown === e.target){
+            setDropDownVisible(true);
+            return;
+        }
+
         const column = e.target.parentElement.dataset.sort || e.target.dataset.sort;
 
         let dir = true;
@@ -176,6 +209,12 @@ export default function PostsPage() {
 
     const tableRows = sortedData.length > 0 ? sortedData : initialData;
 
+    const fakeUsers = [
+        {id: 1, username: 'Roman'},
+        {id: 2, username: 'Zhanna'},
+        {id: 3, username: 'Nikita'},
+    ];
+
     return (
         <>
             {tableRows ? (
@@ -186,7 +225,10 @@ export default function PostsPage() {
                                 ID <SortIcon data-sort={ID} status={sortIcon.id}/>
                             </th>
                             <th onClick={handleSort} data-sort={USERNAME}>
-                                Author <SortIcon status={sortIcon.username}/>
+                                {dropDownVisible && <DropDown users={fakeUsers} ref={dropDownRef}/>}
+                                <i className="fas fa-check-square" ref={dropDownIconRef}></i>
+                                Author
+                                <SortIcon status={sortIcon.username}/>
                             </th>
                             <th onClick={handleSort} data-sort={TITLE}>
                                 Title <SortIcon status={sortIcon.title}/>
@@ -195,7 +237,7 @@ export default function PostsPage() {
                                 Text <SortIcon status={sortIcon.body}/>
                             </th>
                             <th>
-                                <input ref={inputRef} onChange={handleSearchChange}/>
+                                <input ref={inputRef} onChange={handleSearchChange} placeholder='search...'/>
                             </th>
                             <th/>
                         </tr>
@@ -207,8 +249,10 @@ export default function PostsPage() {
                                 <td>{row.username}</td>
                                 <td>{row.title}</td>
                                 <td>{row.body}</td>
-                                <td>Edit</td>
-                                <DelCell><i className="fas fa-trash" onClick={() => {handleDeletePost(row.id)}}></i></DelCell>
+                                <td><i className="fas fa-edit"></i></td>
+                                <DelCell><i className="fas fa-trash" onClick={() => {
+                                    handleDeletePost(row.id)
+                                }}></i></DelCell>
                             </tr>
                         ))}
                     </TableBody>
